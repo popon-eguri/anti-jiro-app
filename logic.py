@@ -12,25 +12,37 @@ from supabase import create_client, Client
 
 def get_supabase_client() -> Client:
     """Streamlit Secretsまたは環境変数からURLとKEYを取得してSupabaseクライアントを作成する"""
-    # 1. まずStreamlit Secretsから取得を試みる
+    url = ""
+    key = ""
+    
+    # 1. Streamlit Secretsから取得を試みる
     try:
         url = st.secrets["SUPABASE_URL"]
         key = st.secrets["SUPABASE_KEY"]
     except Exception:
-        # 2. ダメならOSの環境変数から取得を試みる
+        # 2. 環境変数から取得を試みる
         url = os.getenv("SUPABASE_URL", "")
         key = os.getenv("SUPABASE_KEY", "")
+        
+    if not url or not key:
+        raise ValueError("SUPABASE_URL または SUPABASE_KEY が設定されていないわ！Secretsを確認してね！")
         
     return create_client(url, key)
 
 def load_foods_data():
-    """Supabaseのfoodsテーブルから全食品データを取得する"""
+    """Supabaseのfoodsテーブルから全食品データを取得する（型安全版）"""
     try:
         supabase = get_supabase_client()
         response = supabase.table("foods").select("*").order("created_at", desc=False).execute()
-        return response.data
+        
+        # 取得したデータがリストかつ中身が辞書型（dict）であるものだけを抽出（防御的プログラミング）
+        if isinstance(response.data, list):
+            valid_foods = [item for item in response.data if isinstance(item, dict) and "name" in item]
+            return valid_foods
+        return []
     except Exception as e:
-        print(f"Error loading foods from Supabase: {e}")
+        # エラーが起きたら画面上にも分かりやすく警告を出す
+        st.error(f"🚨 Supabaseからのデータ取得に失敗したわ: {e}")
         return []
 
 def add_food_to_json(new_food, filepath=None):
