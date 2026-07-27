@@ -27,6 +27,7 @@ if "today_log" not in st.session_state:
 
 # DB（JSON）から食品リストをロード
 foods_list = load_foods_data()
+st.write("🔍 デバッグ表示（Supabaseから取れたデータ）:", foods_list)
 
 # ----------------------------------------------------
 # サイドバー：ユーザー設定 ＆ 食品マスター管理 (CRUD)
