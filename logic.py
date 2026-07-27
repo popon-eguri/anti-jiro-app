@@ -6,15 +6,22 @@ from supabase import create_client, Client
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
+import os
+import streamlit as st
+from supabase import create_client, Client
+
 def get_supabase_client() -> Client:
-    """Supabaseクライアントを作成して返す"""
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        # Streamlit secretsから読み込むフォールバック処理
-        import streamlit as st
-        url = st.secrets.get("SUPABASE_URL", "")
-        key = st.secrets.get("SUPABASE_KEY", "")
-        return create_client(url, key)
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
+    """Streamlit Secretsまたは環境変数からURLとKEYを取得してSupabaseクライアントを作成する"""
+    # 1. まずStreamlit Secretsから取得を試みる
+    try:
+        url = st.secrets["SUPABASE_URL"]
+        key = st.secrets["SUPABASE_KEY"]
+    except Exception:
+        # 2. ダメならOSの環境変数から取得を試みる
+        url = os.getenv("SUPABASE_URL", "")
+        key = os.getenv("SUPABASE_KEY", "")
+        
+    return create_client(url, key)
 
 def load_foods_data():
     """Supabaseのfoodsテーブルから全食品データを取得する"""
