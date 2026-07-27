@@ -30,19 +30,21 @@ def get_supabase_client() -> Client:
     return create_client(url, key)
 
 def load_foods_data():
-    """Supabaseのfoodsテーブルから全食品データを取得する（型安全版）"""
+    """Supabaseからの取得結果やエラーを包み隠さず画面に出す診断版"""
     try:
         supabase = get_supabase_client()
-        response = supabase.table("foods").select("*").order("created_at", desc=False).execute()
+        response = supabase.table("foods").select("*").execute()
         
-        # 取得したデータがリストかつ中身が辞書型（dict）であるものだけを抽出（防御的プログラミング）
-        if isinstance(response.data, list):
-            valid_foods = [item for item in response.data if isinstance(item, dict) and "name" in item]
-            return valid_foods
-        return []
+        # 取得できた生データをそのまま返す
+        if response.data:
+            return response.data
+        else:
+            st.warning("⚠️ Supabaseとの通信は成功したけど、データが0件で返ってきたわ！")
+            return []
+            
     except Exception as e:
-        # エラーが起きたら画面上にも分かりやすく警告を出す
-        st.error(f"🚨 Supabaseからのデータ取得に失敗したわ: {e}")
+        # エラーの内容を画面にでっかく赤字で表示する！
+        st.error(f"💥 Supabaseエラー発生: {type(e).__name__} - {e}")
         return []
 
 def add_food_to_json(new_food, filepath=None):
