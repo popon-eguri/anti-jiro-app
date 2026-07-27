@@ -1,13 +1,72 @@
-# logic.py - バックエンド（演算・データ処理モジュール）
-import json
+# logic.py - Supabase（クラウドデータベース）連携版
+import os
+from supabase import create_client, Client
 
-def load_foods_data(filepath="foods.json"):
-    """JSONファイルから食品データを読み込む"""
+# 環境変数はStreamlit Secretsまたはローカル環境から取得
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
+
+def get_supabase_client() -> Client:
+    """Supabaseクライアントを作成して返す"""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        # Streamlit secretsから読み込むフォールバック処理
+        import streamlit as st
+        url = st.secrets.get("SUPABASE_URL", "")
+        key = st.secrets.get("SUPABASE_KEY", "")
+        return create_client(url, key)
+    return create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def load_foods_data():
+    """Supabaseのfoodsテーブルから全食品データを取得する"""
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
+        supabase = get_supabase_client()
+        response = supabase.table("foods").select("*").order("created_at", desc=False).execute()
+        return response.data
+    except Exception as e:
+        print(f"Error loading foods from Supabase: {e}")
         return []
+
+def add_food_to_json(new_food, filepath=None):
+    """新しい食品データをSupabaseのfoodsテーブルに挿入する (関数名は互換性のため維持)"""
+    try:
+        supabase = get_supabase_client()
+        data = {
+            "name": new_food["name"],
+            "p": float(new_food["p"]),
+            "f": float(new_food["f"]),
+            "c": float(new_food["c"])
+        }
+        supabase.table("foods").insert(data).execute()
+        return True
+    except Exception as e:
+        print(f"Error adding food to Supabase: {e}")
+        return False
+
+def update_food_in_json(updated_food, filepath=None):
+    """指定されたIDの食品データをSupabaseで更新する"""
+    try:
+        supabase = get_supabase_client()
+        data = {
+            "name": updated_food["name"],
+            "p": float(updated_food["p"]),
+            "f": float(updated_food["f"]),
+            "c": float(updated_food["c"])
+        }
+        supabase.table("foods").update(data).eq("id", updated_food["id"]).execute()
+        return True
+    except Exception as e:
+        print(f"Error updating food in Supabase: {e}")
+        return False
+
+def delete_food_from_json(food_id, filepath=None):
+    """指定されたIDの食品をSupabaseから削除する"""
+    try:
+        supabase = get_supabase_client()
+        supabase.table("foods").delete().eq("id", food_id).execute()
+        return True
+    except Exception as e:
+        print(f"Error deleting food from Supabase: {e}")
+        return False
 
 def calculate_target_pfc(gender, age, height_cm, weight_kg, activity_level):
     """ユーザーのスペックから基礎代謝(BMR)・TDEE・目標PFCを計算する"""
@@ -31,54 +90,5 @@ def calculate_target_pfc(gender, age, height_cm, weight_kg, activity_level):
     }
 
 def calculate_consumed_kcal(p, f, c):
-    """PFCから総カロリーを計算する (P:4kcal, F:9kcal, C:4kcal)"""
+    """PFCから総カロリーを計算する"""
     return round(p * 4.0 + f * 9.0 + c * 4.0)
-
-def add_food_to_json(new_food, filepath="foods.json"):
-    """新しい食品データをfoods.jsonに追記保存する"""
-    foods = load_foods_data(filepath)
-    
-    # 重複防止用IDの生成（簡易的）
-    new_food["id"] = f"custom_{len(foods) + 1}"
-    foods.append(new_food)
-
-    try:
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(foods, f, ensure_ascii=False, indent=2)
-        return True
-    except Exception as e:
-        print(f"Error saving food: {e}")
-        return False
-
-    # logic.py の末尾に追記
-
-def delete_food_from_json(food_id, filepath="foods.json"):
-    """指定されたIDの食品をfoods.jsonから削除する"""
-    foods = load_foods_data(filepath)
-    # 対象のID以外の食品だけで新しいリストを作成（フィルタリング）
-    updated_foods = [f for f in foods if f.get("id") != food_id]
-    
-    try:
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(updated_foods, f, ensure_ascii=False, indent=2)
-        return True
-    except Exception as e:
-        print(f"Error deleting food: {e}")
-        return False
-
-def update_food_in_json(updated_food, filepath="foods.json"):
-    """指定されたIDの食品データを更新してfoods.jsonに上書き保存する"""
-    foods = load_foods_data(filepath)
-    
-    for i, f in enumerate(foods):
-        if f.get("id") == updated_food["id"]:
-            foods[i] = updated_food
-            break
-
-    try:
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(foods, f, ensure_ascii=False, indent=2)
-        return True
-    except Exception as e:
-        print(f"Error updating food: {e}")
-        return False
