@@ -41,7 +41,10 @@ if st.session_state.user is None:
                 try:
                     res = sign_in(login_email, login_password)
                     if res.user:
-                        st.session_state.user = res.user
+                        st.session_state.user = {
+                            "id": res.user.id,
+                            "email": res.user.email
+                        }
                         st.success("ログインに成功したわ！")
                         st.rerun()
                     else:
