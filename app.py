@@ -169,6 +169,18 @@ else:
                 },
                 use_container_width=True
             )
+            
+            st.subheader("🍽 今日食べた食品を登録")
+
+            for food in all_foods:
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(f"**{food['name']}**（P:{food['p']} / F:{food['f']} / C:{food['c']}）")
+                with col2:
+                    if st.button(f"今日食べた！", key=f"eat_{food['id']}"):
+                        add_intake_log(user.id, food['id'])
+                        st.success(f"{food['name']} を今日の摂取に追加したわ！")
+                        st.rerun()
         
             st.subheader("PFCバランスの比較")
             fig = px.bar(
