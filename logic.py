@@ -92,6 +92,24 @@ def recommend_foods(all_foods, target_p, target_f, target_c):
 
     return recommendations
 
+    def add_intake_log(user_id, food_id):
+        supabase = get_supabase_client()
+        response = supabase.table("intake_logs").insert({
+            "user_id": user_id,
+            "food_id": food_id
+        }).execute()
+        return response.data
+
+    def load_today_intake(user_id):
+        supabase = get_supabase_client()
+        response = supabase.table("intake_logs") \
+            .select("food_id") \
+            .eq("user_id", user_id) \
+            .eq("taken_at", date.today().isoformat()) \
+            .execute()
+        return response.data or []
+
+
 # --- 🗄️ データ操作関数（ユーザーID連携版） ---
 
 def load_foods_data(user_id: str):
