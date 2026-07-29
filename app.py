@@ -10,6 +10,10 @@ from logic import (
     update_food_data,
     delete_food_data
 )
+foods_list = load_foods_data(user.id)
+preset_list = load_preset_foods()
+
+all_foods = preset_list + foods_list
 
 st.set_page_config(page_title="アンチ二郎 PWA", layout="wide")
 
