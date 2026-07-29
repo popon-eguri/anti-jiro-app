@@ -41,7 +41,18 @@ def sign_out():
 def load_preset_foods():
     supabase = get_supabase_client()
     response = supabase.table("food_presets").select("*").execute()
-    return response.data or []
+
+    if isinstance(response.data, list):
+        preset_foods = []
+        for item in response.data:
+            if isinstance(item, dict) and "name" in item:
+                item["p"] = float(item.get("p", 0))
+                item["f"] = float(item.get("f", 0))
+                item["c"] = float(item.get("c", 0))
+                preset_foods.append(item)
+        return preset_foods
+
+    return []
 
 # --- 🗄️ データ操作関数（ユーザーID連携版） ---
 
