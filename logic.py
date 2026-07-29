@@ -98,7 +98,7 @@ def add_intake_log(user_id, food_id):
     supabase = get_supabase_client()
     response = supabase.table("intake_logs").insert({
         "user_id": user_id,
-        "food_id": food_id
+        "food_id": food_id,
         "taken_at": date.today().isoformat()
     }).execute()
     return response.data
