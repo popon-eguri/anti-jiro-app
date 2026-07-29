@@ -92,25 +92,25 @@ def recommend_foods(all_foods, target_p, target_f, target_c):
 
     return recommendations
 
-    from datetime import date
+from datetime import date
 
-    def add_intake_log(user_id, food_id):
-        supabase = get_supabase_client()
-        response = supabase.table("intake_logs").insert({
-            "user_id": user_id,
-            "food_id": food_id
-            "taken_at": date.today().isoformat()
-        }).execute()
-        return response.data
+def add_intake_log(user_id, food_id):
+    supabase = get_supabase_client()
+    response = supabase.table("intake_logs").insert({
+        "user_id": user_id,
+        "food_id": food_id
+        "taken_at": date.today().isoformat()
+    }).execute()
+    return response.data
 
-    def load_today_intake(user_id):
-        supabase = get_supabase_client()
-        response = supabase.table("intake_logs") \
-            .select("food_id") \
-            .eq("user_id", user_id) \
-            .eq("taken_at", date.today().isoformat()) \
-            .execute()
-        return response.data or []
+def load_today_intake(user_id):
+    supabase = get_supabase_client()
+    response = supabase.table("intake_logs") \
+        .select("food_id") \
+        .eq("user_id", user_id) \
+        .eq("taken_at", date.today().isoformat()) \
+        .execute()
+    return response.data or []
 
 
 
