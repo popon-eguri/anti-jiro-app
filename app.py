@@ -7,6 +7,7 @@ from logic import (
     sign_out,
     load_foods_data,
     load_preset_foods,
+    recommend_foods,
     add_food_data,
     update_food_data,
     delete_food_data
