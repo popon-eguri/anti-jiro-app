@@ -10,10 +10,6 @@ from logic import (
     update_food_data,
     delete_food_data
 )
-foods_list = load_foods_data(user.id)
-preset_list = load_preset_foods()
-
-all_foods = preset_list + foods_list
 
 st.set_page_config(page_title="アンチ二郎 PWA", layout="wide")
 
@@ -75,6 +71,11 @@ if st.session_state.user is None:
 # ---------------------------------------------------------
 else:
     user = st.session_state.user
+
+    # 🔥 ここに統合ロジックを置くのが正解！
+    foods_list = load_foods_data(user.id)
+    preset_list = load_preset_foods()
+    all_foods = preset_list + foods_list
     
     # サイドバー（ユーザー情報＆プロフィール入力）
     st.sidebar.write(f"👤 **{user.email}** でログイン中")
