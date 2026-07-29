@@ -9,7 +9,7 @@ from logic import (
     load_preset_foods,
     recommend_foods,
     add_intake_log,
-    load_today_intake,
+    load_today_data,
     add_food_data,
     update_food_data,
     delete_food_data
