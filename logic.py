@@ -38,6 +38,11 @@ def sign_out():
     supabase = get_supabase_client()
     supabase.auth.sign_out()
 
+def load_preset_foods():
+    supabase = get_supabase_client()
+    response = supabase.table("food_presets").select("*").execute()
+    return response.data or []
+
 # --- 🗄️ データ操作関数（ユーザーID連携版） ---
 
 def load_foods_data(user_id: str):
