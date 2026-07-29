@@ -54,6 +54,44 @@ def load_preset_foods():
 
     return []
 
+def recommend_foods(all_foods, target_p, target_f, target_c):
+    """
+    不足しているPFCを補うおすすめ食品をスコア順に返す
+    """
+
+    # 不足量（マイナスなら0扱い）
+    deficit_p = max(target_p, 0)
+    deficit_f = max(target_f, 0)
+    deficit_c = max(target_c, 0)
+
+    recommendations = []
+
+    for food in all_foods:
+        p = food.get("p", 0)
+        f = food.get("f", 0)
+        c = food.get("c", 0)
+
+        # 不足をどれだけ補えるか（比率）
+        score_p = p / deficit_p if deficit_p > 0 else 0
+        score_f = f / deficit_f if deficit_f > 0 else 0
+        score_c = c / deficit_c if deficit_c > 0 else 0
+
+        # 総合スコア（重み付け）
+        score = score_p * 0.4 + score_f * 0.3 + score_c * 0.3
+
+        recommendations.append({
+            "name": food["name"],
+            "p": p,
+            "f": f,
+            "c": c,
+            "score": score
+        })
+
+    # スコア順に並べる
+    recommendations.sort(key=lambda x: x["score"], reverse=True)
+
+    return recommendations
+
 # --- 🗄️ データ操作関数（ユーザーID連携版） ---
 
 def load_foods_data(user_id: str):
@@ -119,3 +157,4 @@ def delete_food_data(food_id: str):
     except Exception as e:
         st.error(f"🚨 データ削除エラー: {e}")
         return None
+
