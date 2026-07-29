@@ -168,7 +168,7 @@ else:
         
             st.subheader("PFCバランスの比較")
             fig = px.bar(
-    　　       df, 
+               df, 
                 x="name", 
                 y=["p", "f", "c"], 
                 title="食品ごとのPFC量 (g)",
