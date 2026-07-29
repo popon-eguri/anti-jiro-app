@@ -149,36 +149,36 @@ else:
     tab_view, tab_add, tab_edit = st.tabs(["📊 食品一覧・グラフ", "➕ 新規登録", "✏️ 編集・削除"])
 
     # --- タブ1: 一覧とグラフ ---
-　　with tab_view:
-　　    st.subheader("登録済み食品データ（プリセット＋ユーザー食品）")
+    with tab_view:
+        st.subheader("登録済み食品データ（プリセット＋ユーザー食品）")
     
- 　　   if all_foods:
-  　　      df = pd.DataFrame(all_foods)
+        if all_foods:
+            df = pd.DataFrame(all_foods)
         
-  　　      st.dataframe(
-   　　         df[['name', 'p', 'f', 'c']],
-   　　         column_config={
-    　　            "name": "食品名",
-        　　        "p": "タンパク質 (g)",
-            　　    "f": "脂質 (g)",
-           　　     "c": "炭水化物 (g)"
-          　　  },
-          　　  use_container_width=True
-      　　  )
+            st.dataframe(
+                df[['name', 'p', 'f', 'c']],
+                column_config={
+                    "name": "食品名",
+                    "p": "タンパク質 (g)",
+                    "f": "脂質 (g)",
+                    "c": "炭水化物 (g)"
+                },
+                use_container_width=True
+            )
         
-       　　 st.subheader("PFCバランスの比較")
-       　　 fig = px.bar(
-    　　　　   df, 
-        　　    x="name", 
-          　　  y=["p", "f", "c"], 
-          　 　 title="食品ごとのPFC量 (g)",
-         　　   labels={"value": "グラム (g)", "variable": "栄養素", "name": "食品名"},
-         　　   barmode="group"
-       　　 )
-   　　     st.plotly_chart(fig, use_container_width=True)
+            st.subheader("PFCバランスの比較")
+            fig = px.bar(
+    　　       df, 
+                x="name", 
+                y=["p", "f", "c"], 
+                title="食品ごとのPFC量 (g)",
+                labels={"value": "グラム (g)", "variable": "栄養素", "name": "食品名"},
+                barmode="group"
+            )
+            st.plotly_chart(fig, use_container_width=True)
         
- 　　   else:
-    　　    st.info("食品データがまだないわ！プリセットか新規登録を使って追加してみてね！")
+        else:
+            st.info("食品データがまだないわ！プリセットか新規登録を使って追加してみてね！")
 
     # --- タブ2: 新規登録 ---
     with tab_add:
