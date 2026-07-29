@@ -259,6 +259,12 @@ else:
         else:
             st.info("編集・削除できる食品データがないわ！")
 
+    today_logs = load_today_intake(user.id)
+
+    today_p = sum(next(f['p'] for f in all_foods if f['id'] == log['food_id']) for log in today_logs)
+    today_f = sum(next(f['f'] for f in all_foods if f['id'] == log['food_id']) for log in today_logs)
+    today_c = sum(next(f['c'] for f in all_foods if f['id'] == log['food_id']) for log in today_logs)
+
     with tab_recommend:
         st.subheader("🔥 今日のおすすめ食品")
 
@@ -267,4 +273,12 @@ else:
                 st.write(f"**{item['name']}**（スコア: {item['score']:.2f}）")
         else:
             st.info("おすすめ食品が見つからなかったわ！")
+
+    st.subheader("📅 今日の摂取状況")
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("摂取P", f"{today_p:.1f} g", f"{today_p - target_p:.1f} g")
+    col2.metric("摂取F", f"{today_f:.1f} g", f"{today_f - target_f:.1f} g")
+    col3.metric("摂取C", f"{today_c:.1f} g", f"{today_c - target_c:.1f} g")
+
 
