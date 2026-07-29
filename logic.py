@@ -90,7 +90,7 @@ def recommend_foods(all_foods, target_p, target_f, target_c):
     # スコア順に並べる
     recommendations.sort(key=lambda x: x["score"], reverse=True)
 
-return recommendations
+    return recommendations
 
 from datetime import date
 
