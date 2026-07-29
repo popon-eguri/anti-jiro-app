@@ -51,9 +51,6 @@ if st.session_state.user is None:
             else:
                 st.warning("メールアドレスとパスワードを入力してね！")
 
-    st.write("DEBUG: user.id =", st.session_state.user.id)
-    st.write("DEBUG: user dict =", st.session_state.user)
-
     # --- 新規登録タブ ---
     with tab_signup:
         st.subheader("新規アカウント作成")
@@ -78,6 +75,9 @@ if st.session_state.user is None:
 # ---------------------------------------------------------
 else:
     user = st.session_state.user
+
+    st.write("DEBUG: user.id =", st.session_state.user.id)
+    st.write("DEBUG: user dict =", st.session_state.user)
 
     # 🔥 ここに統合ロジックを置くのが正解！
     foods_list = load_foods_data(user.id)
