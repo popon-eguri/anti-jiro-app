@@ -103,15 +103,6 @@ else:
 
     recommended = recommend_foods(all_foods, target_p, target_f, target_c)
 
-    st.subheader("🔥 今日のおすすめ食品")
-
-    if recommended:
-        for item in recommended[:5]:  # 上位5件だけ表示
-            st.write(f"**{item['name']}**（スコア: {item['score']:.2f}）")
-    else:
-        st.info("おすすめ食品が見つからなかったわ！")
-
-
     # 活動量を仮に1.375（軽度の運動）として推定消費カロリー算出
     tdee = bmr * 1.375
 
@@ -254,3 +245,13 @@ else:
                             st.rerun()
         else:
             st.info("編集・削除できる食品データがないわ！")
+
+    with tab_recommend:
+        st.subheader("🔥 今日のおすすめ食品")
+
+        if recommended:
+            for item in recommended[:5]:  # 上位5件だけ表示
+                st.write(f"**{item['name']}**（スコア: {item['score']:.2f}）")
+        else:
+            st.info("おすすめ食品が見つからなかったわ！")
+
