@@ -101,8 +101,6 @@ else:
     else:
         bmr = 10 * weight + 6.25 * height - 5 * age - 161
 
-    recommended = recommend_foods(all_foods, target_p, target_f, target_c)
-
     # 活動量を仮に1.375（軽度の運動）として推定消費カロリー算出
     tdee = bmr * 1.375
 
@@ -117,6 +115,8 @@ else:
     target_p = (target_calories * 0.25) / 4
     target_f = (target_calories * 0.25) / 9
     target_c = (target_calories * 0.50) / 4
+
+    recommended = recommend_foods(all_foods, target_p, target_f, target_c)
 
     # メイン表示エリア
     st.title("🍜 アンチ二郎 PWA")
