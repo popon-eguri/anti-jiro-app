@@ -13,7 +13,7 @@ from logic import (
 
 st.set_page_config(page_title="アンチ二郎 PWA", layout="wide")
 
-# 1. セッション状態（ログイン情報）の初期化
+# セッション状態（ログイン情報）の初期化
 if "user" not in st.session_state:
     st.session_state.user = None
 
@@ -72,33 +72,75 @@ if st.session_state.user is None:
 else:
     user = st.session_state.user
     
-    # サイドバーにユーザー情報とログアウトボタンを設置
+    # サイドバー（ユーザー情報＆プロフィール入力）
     st.sidebar.write(f"👤 **{user.email}** でログイン中")
     if st.sidebar.button("ログアウト"):
         sign_out()
         st.session_state.user = None
         st.rerun()
 
+    st.sidebar.divider()
+    st.sidebar.header("⚙️ 身体プロフィールの設定")
+    
+    # 身長・体重・性別・目的の入力フォーム
+    gender = st.sidebar.selectbox("性別", ["男性", "女性"], key="prof_gender")
+    height = st.sidebar.number_input("身長 (cm)", min_value=100.0, max_value=250.0, value=170.0, step=0.1, key="prof_height")
+    weight = st.sidebar.number_input("体重 (kg)", min_value=30.0, max_value=200.0, value=65.0, step=0.1, key="prof_weight")
+    age = st.sidebar.number_input("年齢", min_value=10, max_value=100, value=25, step=1, key="prof_age")
+    purpose = st.sidebar.selectbox("目的", ["減量（アンチ二郎）", "現状維持", "増量"], key="prof_purpose")
+
+    # --- 簡易基礎代謝（BMR）＆目標PFC計算 ---
+    if gender == "男性":
+        bmr = 10 * weight + 6.25 * height - 5 * age + 5
+    else:
+        bmr = 10 * weight + 6.25 * height - 5 * age - 161
+
+    # 活動量を仮に1.375（軽度の運動）として推定消費カロリー算出
+    tdee = bmr * 1.375
+
+    if purpose == "減量（アンチ二郎）":
+        target_calories = tdee - 500
+    elif purpose == "増量":
+        target_calories = tdee + 300
+    else:
+        target_calories = tdee
+
+    # 目標PFC (P:25%, F:25%, C:50% で簡易計算)
+    target_p = (target_calories * 0.25) / 4
+    target_f = (target_calories * 0.25) / 9
+    target_c = (target_calories * 0.50) / 4
+
+    # メイン表示エリア
     st.title("🍜 アンチ二郎 PWA")
     
-    # ログイン中のユーザーIDを使ってデータを取得
+    # ユーザーごとの食品データ読み込み
     foods_list = load_foods_data(user.id)
 
-    # 画面上部にサマリーを表示
+    # 上部サマリーエリア（目標カロリー・PFCと登録食品数）
+    st.subheader("🎯 あなたの1日目標設定")
+    scol1, scol2, scol3, scol4 = st.columns(4)
+    scol1.metric("目標カロリー", f"{target_calories:.0f} kcal")
+    scol2.metric("目標 P (タンパク質)", f"{target_p:.1f} g")
+    scol3.metric("目標 F (脂質)", f"{target_f:.1f} g")
+    scol4.metric("目標 C (炭水化物)", f"{target_c:.1f} g")
+
+    st.divider()
+
     total_items = len(foods_list)
     avg_p = sum(f['p'] for f in foods_list) / total_items if total_items > 0 else 0
     avg_f = sum(f['f'] for f in foods_list) / total_items if total_items > 0 else 0
     avg_c = sum(f['c'] for f in foods_list) / total_items if total_items > 0 else 0
 
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("登録食品数", f"{total_items} 件")
-    col2.metric("平均タンパク質(P)", f"{avg_p:.1f} g")
-    col3.metric("平均脂質(F)", f"{avg_f:.1f} g")
-    col4.metric("平均炭水化物(C)", f"{avg_c:.1f} g")
+    st.subheader("📊 登録食品の平均データ")
+    fcol1, fcol2, fcol3, fcol4 = st.columns(4)
+    fcol1.metric("登録食品数", f"{total_items} 件")
+    fcol2.metric("平均 P", f"{avg_p:.1f} g")
+    fcol3.metric("平均 F", f"{avg_f:.1f} g")
+    fcol4.metric("平均 C", f"{avg_c:.1f} g")
 
     st.divider()
 
-    # タブで機能を切り替え
+    # タブ切り替えエリア
     tab_view, tab_add, tab_edit = st.tabs(["📊 食品一覧・グラフ", "➕ 新規登録", "✏️ 編集・削除"])
 
     # --- タブ1: 一覧とグラフ ---
@@ -148,7 +190,6 @@ else:
                 if new_name.strip() == "":
                     st.error("食品名を入力してちょうだい！")
                 else:
-                    # ユーザーIDも渡して保存！
                     res = add_food_data(new_name, new_p, new_f, new_c, user.id)
                     if res:
                         st.success(f"「{new_name}」を追加したわ！")
