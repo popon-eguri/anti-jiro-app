@@ -149,7 +149,7 @@ else:
     st.divider()
 
     # タブ切り替えエリア
-    tab_view, tab_add, tab_edit = st.tabs(["📊 食品一覧・グラフ", "➕ 新規登録", "✏️ 編集・削除"])
+    tab_view, tab_add, tab_edit, tab_recommend = st.tabs(["📊 食品一覧・グラフ", "➕ 新規登録", "✏️ 編集・削除","🔥 おすすめ食品"])
 
     # --- タブ1: 一覧とグラフ ---
     with tab_view:
