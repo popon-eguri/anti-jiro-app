@@ -51,6 +51,9 @@ if st.session_state.user is None:
             else:
                 st.warning("メールアドレスとパスワードを入力してね！")
 
+    st.write("DEBUG: user.id =", st.session_state.user.id)
+    st.write("DEBUG: user dict =", st.session_state.user)
+
     # --- 新規登録タブ ---
     with tab_signup:
         st.subheader("新規アカウント作成")
