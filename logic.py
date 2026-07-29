@@ -1,11 +1,3 @@
-# logic.py - Supabase（クラウドデータベース）連携版
-import os
-from supabase import create_client, Client
-
-# 環境変数はStreamlit Secretsまたはローカル環境から取得
-SUPABASE_URL = os.getenv("SUPABASE_URL", "")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
-
 import os
 import streamlit as st
 from supabase import create_client, Client
@@ -15,101 +7,99 @@ def get_supabase_client() -> Client:
     url = ""
     key = ""
     
-    # 1. Streamlit Secretsから取得を試みる
     try:
         url = st.secrets["SUPABASE_URL"]
         key = st.secrets["SUPABASE_KEY"]
     except Exception:
-        # 2. 環境変数から取得を試みる
         url = os.getenv("SUPABASE_URL", "")
         key = os.getenv("SUPABASE_KEY", "")
         
     if not url or not key:
-        raise ValueError("SUPABASE_URL または SUPABASE_KEY が設定されていないわ！Secretsを確認してね！")
+        raise ValueError("SUPABASE_URL または SUPABASE_KEY が設定されていないわ！")
         
     return create_client(url, key)
 
-def load_foods_data():
-    """Supabaseからの取得結果やエラーを包み隠さず画面に出す診断版"""
+# --- 🔐 認証用関数 ---
+
+def sign_up(email: str, password: str):
+    """新規ユーザー登録"""
+    supabase = get_supabase_client()
+    response = supabase.auth.sign_up({"email": email, "password": password})
+    return response
+
+def sign_in(email: str, password: str):
+    """ログイン"""
+    supabase = get_supabase_client()
+    response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+    return response
+
+def sign_out():
+    """ログアウト"""
+    supabase = get_supabase_client()
+    supabase.auth.sign_out()
+
+# --- 🗄️ データ操作関数（ユーザーID連携版） ---
+
+def load_foods_data(user_id: str):
+    """ログイン中ユーザーの食品データのみを取得する"""
     try:
         supabase = get_supabase_client()
-        response = supabase.table("foods").select("*").execute()
+        # eq("user_id", user_id) で自分のデータだけに絞り込み！
+        response = supabase.table("foods").select("*").eq("user_id", user_id).order("created_at", desc=False).execute()
         
-        # 取得できた生データをそのまま返す
-        if response.data:
-            return response.data
-        else:
-            st.warning("⚠️ Supabaseとの通信は成功したけど、データが0件で返ってきたわ！")
-            return []
-            
+        if isinstance(response.data, list):
+            valid_foods = []
+            for item in response.data:
+                if isinstance(item, dict) and "name" in item:
+                    item["p"] = float(item.get("p", 0))
+                    item["f"] = float(item.get("f", 0))
+                    item["c"] = float(item.get("c", 0))
+                    valid_foods.append(item)
+            return valid_foods
+        return []
     except Exception as e:
-        # エラーの内容を画面にでっかく赤字で表示する！
-        st.error(f"💥 Supabaseエラー発生: {type(e).__name__} - {e}")
+        st.error(f"🚨 データ取得エラー: {e}")
         return []
 
-def add_food_to_json(new_food, filepath=None):
-    """新しい食品データをSupabaseのfoodsテーブルに挿入する (関数名は互換性のため維持)"""
+def add_food_data(name: str, p: float, f: float, c: float, user_id: str):
+    """新規食品データを追加（user_idを紐付け）"""
     try:
         supabase = get_supabase_client()
-        data = {
-            "name": new_food["name"],
-            "p": float(new_food["p"]),
-            "f": float(new_food["f"]),
-            "c": float(new_food["c"])
+        new_data = {
+            "name": name,
+            "p": p,
+            "f": f,
+            "c": c,
+            "user_id": user_id  # 🔑 誰が追加したか記録！
         }
-        supabase.table("foods").insert(data).execute()
-        return True
+        response = supabase.table("foods").insert(new_data).execute()
+        return response
     except Exception as e:
-        print(f"Error adding food to Supabase: {e}")
-        return False
+        st.error(f"🚨 データ追加エラー: {e}")
+        return None
 
-def update_food_in_json(updated_food, filepath=None):
-    """指定されたIDの食品データをSupabaseで更新する"""
+def update_food_data(food_id: str, name: str, p: float, f: float, c: float):
+    """既存食品データを更新"""
     try:
         supabase = get_supabase_client()
-        data = {
-            "name": updated_food["name"],
-            "p": float(updated_food["p"]),
-            "f": float(updated_food["f"]),
-            "c": float(updated_food["c"])
+        update_data = {
+            "name": name,
+            "p": p,
+            "f": f,
+            "c": c
         }
-        supabase.table("foods").update(data).eq("id", updated_food["id"]).execute()
-        return True
+        response = supabase.table("foods").update(update_data).eq("id", food_id).execute()
+        return response
     except Exception as e:
-        print(f"Error updating food in Supabase: {e}")
-        return False
+        st.error(f"🚨 データ更新エラー: {e}")
+        return None
 
-def delete_food_from_json(food_id, filepath=None):
-    """指定されたIDの食品をSupabaseから削除する"""
+def delete_food_data(food_id: str):
+    """食品データを削除"""
     try:
         supabase = get_supabase_client()
-        supabase.table("foods").delete().eq("id", food_id).execute()
-        return True
+        response = supabase.table("foods").delete().eq("id", food_id).execute()
+        return response
     except Exception as e:
-        print(f"Error deleting food from Supabase: {e}")
-        return False
-
-def calculate_target_pfc(gender, age, height_cm, weight_kg, activity_level):
-    """ユーザーのスペックから基礎代謝(BMR)・TDEE・目標PFCを計算する"""
-    if gender == "男性":
-        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age + 5
-    else:
-        bmr = 10 * weight_kg + 6.25 * height_cm - 5 * age - 161
-
-    act_mult = 1.2 if "低" in activity_level else (1.55 if "高" in activity_level else 1.375)
-    tdee = bmr * act_mult
-
-    target_p = round(weight_kg * 2.0, 1)
-    target_f = round((tdee * 0.20) / 9.0, 1)
-    target_c = round((tdee - (target_p * 4.0 + target_f * 9.0)) / 4.0, 1)
-
-    return {
-        "tdee": round(tdee),
-        "target_p": target_p,
-        "target_f": target_f,
-        "target_c": target_c
-    }
-
-def calculate_consumed_kcal(p, f, c):
-    """PFCから総カロリーを計算する"""
-    return round(p * 4.0 + f * 9.0 + c * 4.0)
+        st.error(f"🚨 データ削除エラー: {e}")
+        return None
