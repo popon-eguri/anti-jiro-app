@@ -83,7 +83,7 @@ else:
     st.write("DEBUG: user dict =", st.session_state.user)
 
     # 🔥 ここに統合ロジックを置くのが正解！
-    foods_list = load_foods_data(user.["id"])
+    foods_list = load_foods_data(user.id)
     preset_list = load_preset_foods()
     all_foods = preset_list + foods_list
     
