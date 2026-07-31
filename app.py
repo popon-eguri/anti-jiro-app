@@ -79,7 +79,7 @@ if st.session_state.user is None:
 else:
     user = st.session_state.user
 
-    st.write("DEBUG: user.id =", st.session_state.user.id)
+    st.write("DEBUG: user.id =", st.session_state.user["id"])
     st.write("DEBUG: user dict =", st.session_state.user)
 
     # 🔥 ここに統合ロジックを置くのが正解！
@@ -186,7 +186,7 @@ else:
                     st.write(f"**{food['name']}**（P:{food['p']} / F:{food['f']} / C:{food['c']}）")
                 with col2:
                     if st.button(f"今日食べた！", key=f"eat_{food['id']}"):
-                        add_intake_log(user.id, food['id'])
+                        add_intake_log(st.session_state.user["id"], food["id"])
                         st.success(f"{food['name']} を今日の摂取に追加したわ！")
                         st.rerun()
         
