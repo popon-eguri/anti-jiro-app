@@ -88,7 +88,7 @@ else:
     all_foods = preset_list + foods_list
     
     # サイドバー（ユーザー情報＆プロフィール入力）
-    st.sidebar.write(f"👤 **{user.email}** でログイン中")
+    st.sidebar.write(f"👤 **{user["email"]}** でログイン中")
     if st.sidebar.button("ログアウト"):
         sign_out()
         st.session_state.user = None
