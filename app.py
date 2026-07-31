@@ -267,7 +267,7 @@ else:
         else:
             st.info("編集・削除できる食品データがないわ！")
 
-    today_logs = load_today_intake(user.id)
+    today_logs = load_today_intake(user["id"])
 
     today_p = sum(next(f['p'] for f in all_foods if f['id'] == log['food_id']) for log in today_logs)
     today_f = sum(next(f['f'] for f in all_foods if f['id'] == log['food_id']) for log in today_logs)
