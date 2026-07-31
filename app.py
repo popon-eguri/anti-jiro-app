@@ -131,7 +131,7 @@ else:
     st.title("🍜 アンチ二郎 PWA")
     
     # ユーザーごとの食品データ読み込み
-    foods_list = load_foods_data(user.["id"])
+    foods_list = load_foods_data(user["id"])
 
     # 上部サマリーエリア（目標カロリー・PFCと登録食品数）
     st.subheader("🎯 あなたの1日目標設定")
